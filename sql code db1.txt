@@ -1,0 +1,131 @@
+-- Database: bar
+
+-- DROP DATABASE bar;
+
+CREATE DATABASE bar
+    WITH 
+    OWNER = postgres
+    ENCODING = 'UTF8'
+    LC_COLLATE = 'Ukrainian_Ukraine.1251'
+    LC_CTYPE = 'Ukrainian_Ukraine.1251'
+    TABLESPACE = pg_default
+    CONNECTION LIMIT = -1;
+
+-- SCHEMA: public
+
+-- DROP SCHEMA public ;
+
+CREATE SCHEMA public
+    AUTHORIZATION postgres;
+
+COMMENT ON SCHEMA public
+    IS 'standard public schema';
+
+GRANT ALL ON SCHEMA public TO PUBLIC;
+
+GRANT ALL ON SCHEMA public TO postgres;
+
+-- Table: public.bills
+
+-- DROP TABLE public.bills;
+
+CREATE TABLE public.bills
+(
+    bill_id integer NOT NULL DEFAULT nextval('bills_bill_id_seq'::regclass),
+    tips integer NOT NULL,
+    "time " time with time zone NOT NULL,
+    CONSTRAINT bills_pkey PRIMARY KEY (bill_id)
+)
+
+TABLESPACE pg_default;
+
+ALTER TABLE public.bills
+    OWNER to postgres;	
+
+-- Table: public.items
+
+-- DROP TABLE public.items;
+
+CREATE TABLE public.items
+(
+    item_id integer NOT NULL DEFAULT nextval('items_item_id_seq'::regclass),
+    name character varying COLLATE pg_catalog."default" NOT NULL,
+    price integer NOT NULL,
+    quantity integer NOT NULL,
+    CONSTRAINT items_pkey PRIMARY KEY (item_id),
+    CONSTRAINT price CHECK (price > 0) NOT VALID
+)
+
+TABLESPACE pg_default;
+
+ALTER TABLE public.items
+    OWNER to postgres;-- Table: public.orders
+
+-- DROP TABLE public.orders;
+
+CREATE TABLE public.orders
+(
+    order_id integer NOT NULL DEFAULT nextval('"Orders_order_id_seq"'::regclass),
+    date date NOT NULL,
+    item_id integer NOT NULL DEFAULT nextval('"Orders_item_id_seq"'::regclass),
+    quantity integer NOT NULL,
+    table_id integer NOT NULL DEFAULT nextval('"Orders_table_id_seq"'::regclass),
+    "time" time with time zone NOT NULL,
+    CONSTRAINT "Orders_pkey" PRIMARY KEY (order_id),
+    CONSTRAINT fk_item_id FOREIGN KEY (item_id)
+        REFERENCES public.items (item_id) MATCH SIMPLE
+        ON UPDATE NO ACTION
+        ON DELETE NO ACTION
+        NOT VALID,
+    CONSTRAINT fk_table_id FOREIGN KEY (order_id)
+        REFERENCES public.tables (table_id) MATCH SIMPLE
+        ON UPDATE NO ACTION
+        ON DELETE NO ACTION
+        NOT VALID
+)
+
+TABLESPACE pg_default;
+
+ALTER TABLE public.orders
+    OWNER to postgres;
+
+-- Table: public.orders_in_bills
+
+-- DROP TABLE public.orders_in_bills;
+
+CREATE TABLE public.orders_in_bills
+(
+    id integer NOT NULL DEFAULT nextval('orders_in_bills_id_seq'::regclass),
+    bill_id integer NOT NULL DEFAULT nextval('orders_in_bills_bill_id_seq'::regclass),
+    order_id integer NOT NULL DEFAULT nextval('orders_in_bills_order_id_seq'::regclass),
+    CONSTRAINT orders_in_bills_pkey PRIMARY KEY (id),
+    CONSTRAINT fk_bill_id FOREIGN KEY (id)
+        REFERENCES public.bills (bill_id) MATCH SIMPLE
+        ON UPDATE NO ACTION
+        ON DELETE NO ACTION,
+    CONSTRAINT fk_order_id FOREIGN KEY (id)
+        REFERENCES public.orders (order_id) MATCH SIMPLE
+        ON UPDATE NO ACTION
+        ON DELETE NO ACTION
+)
+
+TABLESPACE pg_default;
+
+ALTER TABLE public.orders_in_bills
+    OWNER to postgres;
+
+-- Table: public.tables
+
+-- DROP TABLE public.tables;
+
+CREATE TABLE public.tables
+(
+    table_id integer NOT NULL DEFAULT nextval('tables_table_id_seq'::regclass),
+    chair_quantity integer NOT NULL,
+    CONSTRAINT tables_pkey PRIMARY KEY (table_id)
+)
+
+TABLESPACE pg_default;
+
+ALTER TABLE public.tables
+    OWNER to postgres;
